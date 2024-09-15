@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CTSG - Heat</title>
+  <style>
+body {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   min-height: 100vh;
+   width: 100vw;
+   margin: 0;
+   padding: 0;
+   box-sizing: border-box;
+   background-color: #55679C;
+   font-family: Arial, sans-serif;
+   color:#1E2A5E;
+   cursor: none;
+}
+#text-display {
+   position: absolute;
+   top: 250px;
+   left: 0;
+   width: 100%;
+   height: 100%;
+   padding:10px;
+   background-color: transparent;
+   opacity: 0.7;
+   overflow-y: auto;
+   z-index: 1; /* Change z-index to bring text above */
+   line-height: 1.6;
+   word-wrap: break-word;
+   overflow-wrap: break-word;
+}
+
+canvas {
+   position: relative;
+   z-index: 0; /* Ensure canvas is below the text */
+}
+#ascii-header {
+   position: absolute;
+   top: 0;
+   left: 0;
+   width: 100%;
+   color:#1E2A5E;
+   text-align: left;
+   padding: 10px;
+   font-size: 16px;
+   font-family: monospace; /* Keeps ASCII art format */
+   z-index: 2; /* Ensure it's on top */
+   line-height: 1.2;
+}
+
+#ascii-header pre {
+   margin: 0;
+   font-family: monospace; /* Keep monospace for ASCII */
+}
+
+#ascii-header p {
+   font-family: Arial, sans-serif;
+   margin: 0;
+   padding: px;
+   font-weight: bold;
+}
+
+  </style>
+ 
+</head>
+<body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+
+<body>
+  <div id="ascii-header">
+    <!-- Replace with your ASCII art -->
+    <pre>
+ /~~    ' | '       |  ~~|~~    |          
+|   |/~\|~|~|/~~/~~||    |/~//~~|/~\       
+ \__|   | | |\__\__||    |\/_\__|   |      
+                                                 
+/~~\ |         |       /~~\                
+`--.~|~|   |/~~|\  /  |  __|/~\/~\|   ||~~\
+\__/ |  \_/|\__| \/    \__/|   \_/ \_/||__/
+                _/                     |   
+       <p>Heat & Technology <br>Notes Study Materials <a href="https://www.are.na/wip-network/critical-tech-energy">here</a></p>
+      </pre>
+  </div>
+
+  <div id="text-display"></div>  
+
+  <script>
+    let boids = [];
+    let texts = [
+        "W.I.P. is a working studio for dreamers and explorers. A group of Ukrainians scattered around the world have united and created a space to find common ground with others in creation. All communication takes place through Discord and social media. A website is also under development. Currently, there are 45 people in the community. Once a week, we have online meetings to discuss new projects, publications, and proposals. Education in the studios is the main focus of our cooperation. The goal of our community is to try to build a sequence for self-education and show that information is an accessible resource that you just need to know how to use correctly. In addition to the participants, there are also helpers such as Chat CPT and translators. In this way, the materials can be made inclusive for more people.",
+        "One of these educational studios is 'critical technologies'. The main task was to work on various texts about energy. Heat and energy are interrelated concepts. People use them both in science and in everyday life.",
+        "A little context: Every science has its own unique vocabulary associated with it. Precise definition of basic concepts forms a sound foundation for development of a science and prevents possible misunderstandings. Careful study of these concepts is essential for a good understanding of topics in thermodynamics.",
+        "Thermodynamics can be defined as the study of energy, energy transformations and its relation to matter. The analysis of thermal systems is achieved through the application of the governing conservation equations, namely Conservation of Mass, Conservation of Energy (1st law of thermodynamics), the 2nd law of thermodynamics and the property relations. Energy can be viewed as the ability to cause changes.",
+        "A system is defined as a quantity of matter or a region in space chosen for study. The mass or region outside the system is called the surroundings (Boundary, Closed system or control mass, Open system or control volume).",
+        "Important note: some thermodynamics relations that are applicable to closed and open systems are different. In thermodynamics, we deal with change of the total energy only.",
+        "Entropy a measure of the unavailable energy in a closed thermodynamic system that is also usually considered to be a measure of the system's disorder, that is a property of the system's state, and that varies directly with any reversible change in heat in the system and inversely with the temperature of the system.",
+        "Broadly : the degree of disorder or uncertainty in a system. Below are some ideas that I hope will provoke discussion and rekindle research on the linkages between the second law of thermodynamics, the entropy principle, landscape patterns, and the propagation of pattern-process relationships across space and through time.",
+        "'Do we really know what electricity is?' asks Lama Anagarika Govinda, a German scientist who became one of the first Western followers of Tibetan Buddhism. 'Knowing the laws by which it operates and using them, we still do not know the origin or true nature of this force, which may ultimately be the very source of life, light and consciousness, the divine power and the driver of everything that exists.'",
+        "One of the assistants helped me interpret. This passage can be explained in the following way: electricity has the ability not only to evoke deep philosophical reflections on the nature of the universe and our existence (which means 'to elevate the imagination into metaphysical empiricism'), but also to help us stay in touch with reality, with the practical aspects of life on Earth. In other words, electricity has both practical and deep philosophical significance, forcing us to think about the larger questions of existence, but also constantly reminding us of our material, physical reality.",
+        "Actions conducted by state or non-state actors aimed at undermining or damaging a target through a combination of overt and covert military and non-military means. Such actions are coordinated and synchronised and deliberately target the vulnerabilities of democratic states and their institutions. The common denominator for hybrid threats actors is their aim to undermine or harm democratically established governments, countries or alliances (Jungwirth et al., 2023).",
+        "These materials gave rise to discussions and reflections, associations and ideas.",
+        "he/she/they: to understand, today we read about the fact that energy does not disappear (well, it does not disappear AT ALL, it is constantly present), and entropy, for example, is just another system state. And this knowledge was associated with Bataille. And it was very easy to do, because Bataille seems to use the same terms as Ukrainian scientists of the early 20th century. We literally ended up with Bataille talking about the biosphere, and I thought, damn, what if Bataille is a dark Vernadsky... For one, war is an organic thing, for the other it is not, but the framework is generally the same. And we have not yet come to the question of the direct connection with technology, but we can already feel it. I am very interested in where we will go.",
+        "he/she/they: cool, i really liked the part we read. I want to see more. I plan to use his(?) ideas in my text about the play, in which the toaster also declares its power and large radius of influence. In general, a very interesting view, maybe it will be worth coming back in the next meetings of critical-technology.",
+        "he/she/they: heat as an organisational principle. We talked about heat in economics, ecology and war. It is possible to invent and describe a world from the perspective of a non-human in which the principles of heat have been modified (for example, entropy does not exist, energy can appear from nowhere, the sun has disappeared as a source of energy).",
+        "he/she/they: as I understand it, we call everything created by humans 'non-human'. Like, 'I did something so strange here, it can destroy all of humanity... so it's my fault? I didn't do it, it's non-human, this AK-47 assembled itself'. This is how I imagine people who call everything created by humans 'non-human'. The war is going on and we need to keep talking about ourselves, but we are not being listened to. We need to figure out how to become warm to the world, not just to each other. It's a very complicated and long question, but I believe in us.",
+        "he/she/they: I remember at the first meeting we realised that we were afraid of technology, but I'm not really afraid, but after talking about it I started asking myself 'why is everyone afraid and I'm not?' I like to look at people and myself as technology. Sometimes I do this and I can become a very harmful and destructive technology for myself, and sometimes I become a toaster and make myself a meal.",
+        "he/she/they: about the thermos that exploded in a maths lesson (when we were analysing closed/open systems). As far as I understand it, this liquid (either juice or smt else) started to ferment (it was May), gas started to be released, and that's why the thermos exploded (i.e. the volume started to increase but the mass remained the same). It turns out that this energy (heat, because it was May), which had access to this (supposedly???) closed system, was not fully released, but turned into gas through the fermentation process (heat->work?). And then, the thermos broke and exploded, meaning that this energy got out. I started to think that energy cannot be isolated for a long time, it cannot but be exchanged or transformed.",
+        "he/she/they: emotions and thoughts gather, accumulate, increase like heat, but at some point they need to leave the vacuum of the head, go somewhere, and be transformed. Anger -> conflict/fight; some influential events or just not being able to keep your thoughts to yourself -> gossip/oversharing; it's like a tennis ball that we pass to each other.",
+        "he/she/they: the impact of sites that overload the system, not the system, discharge your device very quickly, require a lot of energy to boot up -> bad for the world and resources that are not infinite; the temperature of the world - > heat death, global warming -> people in different parts of the world have different levels of access to energy. Take Ukraine for example, or Palestine - blackouts, limited resources, or charging stations for phones or laptops; so sites that are different are better from many perspectives, and the trend should develop for everyone.",
+        "he/she/they: will the quality of energy be so bad at some point that everything will stop functioning? So maybe we can accumulate it, and as a result, the quality will improve? I don't think it works that way."
+    ];
+    let displayDiv;
+
+    function setup() {
+  createCanvas(windowWidth, windowHeight); // Make canvas responsive
+  displayDiv = select("#text-display");
+  for (let i = 0; i < texts.length; i++) {
+    boids.push(new Boid(random(width), random(height), texts[i]));
+  }
+}
+
+
+function windowResized() {
+   resizeCanvas(windowWidth, windowHeight);  // Resize the canvas when the window size changes
+}
+
+
+    function draw() {
+clear();
+
+  // Draw the blue attractor (the mouse position)
+  fill('#7C93C3');
+  noStroke();
+  circle(mouseX, mouseY, 50);
+
+  // Remove this line to eliminate the circular boundary
+  // circle(width / 2, height / 2, 400); // Boundary circle with radius 200
+
+  // Keep track of the texts that need to be displayed
+  let visibleTexts = [];
+
+  for (let boid of boids) {
+    boid.run(boids);
+
+    // If the boid is within range of the attractor, add its text to the visibleTexts array
+    if (boid.checkAttractor()) {
+      visibleTexts.push(boid.text);
+    }
+  }
+
+  // Display all visible texts at once
+  displayDiv.html(visibleTexts.join("<br>"));
+}
+
+
+    class Boid {
+      constructor(x, y, text) {
+        this.acceleration = createVector(0, 0);
+        this.velocity = createVector(random(-1, 1), random(-1, 1));
+        this.position = createVector(x, y);
+        this.r = 10;
+        this.maxspeed = 3;
+        this.maxforce = 0.05;
+        this.text = text;
+      }
+
+      run(boids) {
+        this.flock(boids);
+        this.update();
+        this.borders();
+        this.show();
+      }
+
+      applyForce(force) {
+        this.acceleration.add(force);
+      }
+
+      flock(boids) {
+        let sep = this.separate(boids);   // Separation
+        let ali = this.align(boids);      // Alignment
+        let coh = this.cohere(boids);     // Cohesion
+        let bound = this.contain();       // Bound within a sector
+        let seekMouse = this.seek(createVector(mouseX, mouseY)); // Seek mouse
+
+        // Weight the forces
+        sep.mult(2);
+        bound.mult(15);
+        seekMouse.mult(1);
+
+        // Apply the forces
+        this.applyForce(sep);
+        this.applyForce(bound);
+        this.applyForce(seekMouse);
+      }
+
+      update() {
+        this.velocity.add(this.acceleration);
+        this.velocity.limit(this.maxspeed);
+        this.position.add(this.velocity);
+        this.acceleration.mult(0);
+      }
+
+      show() {
+              
+        drawingContext.shadowBlur = 15;
+        drawingContext.shadowColor = 'rgba(0, 0, 0, 0.5)';
+
+        fill('#7C93C3');
+        noStroke();
+        circle(this.position.x, this.position.y, this.r * 2);
+         }
+
+      borders() {
+        if (this.position.x < -this.r) this.position.x = width + this.r;
+        if (this.position.y < -this.r) this.position.y = height + this.r;
+        if (this.position.x > width + this.r) this.position.x = -this.r;
+        if (this.position.y > height + this.r) this.position.y = -this.r;
+      }
+
+      checkAttractor() {
+        let d = dist(this.position.x, this.position.y, mouseX, mouseY);
+        return d < 25;
+      }
+
+      contain() {
+        let centre = createVector(width / 2, height / 2);
+        let desired;
+        if (this.position.dist(centre) > 200) {
+          let r = p5.Vector.sub(this.position, centre);
+          let radialV = p5.Vector.dot(r, this.velocity);
+          let toSubtract = radialV + this.maxspeed * 100;
+          desired = p5.Vector.sub(this.velocity, r.setMag(toSubtract));
+
+          desired.normalize();
+          desired.mult(this.maxspeed);
+
+          let steer = p5.Vector.sub(desired, this.velocity);
+          steer.limit(this.maxforce);
+          return steer;
+        }
+        return createVector();
+      }
+
+      seek(target) {
+        let desired = p5.Vector.sub(target, this.position);
+        desired.normalize();
+        desired.mult(this.maxspeed);
+        let steer = p5.Vector.sub(desired, this.velocity);
+        steer.limit(this.maxforce);
+        return steer;
+      }
+
+      separate(boids) {
+        let desiredSeparation = 5;
+        let steer = createVector(0, 0);
+        let count = 0;
+        for (let i = 0; i < boids.length; i++) {
+          let d = p5.Vector.dist(this.position, boids[i].position);
+          if (d > 0 && d < desiredSeparation) {
+            let diff = p5.Vector.sub(this.position, boids[i].position);
+            diff.normalize();
+            diff.div(d);
+            steer.add(diff);
+            count++;
+          }
+        }
+        if (count > 0) {
+          steer.div(count);
+        }
+
+        if (steer.mag() > 0) {
+          steer.normalize();
+          steer.mult(this.maxspeed);
+          steer.sub(this.velocity);
+          steer.limit(this.maxforce);
+        }
+        return steer;
+      }
+
+      align(boids) {
+        let neighborDistance = 5;
+        let sum = createVector(0, 0);
+        let count = 0;
+        for (let i = 0; i < boids.length; i++) {
+          let d = p5.Vector.dist(this.position, boids[i].position);
+          if (d > 0 && d < neighborDistance) {
+            sum.add(boids[i].velocity);
+            count++;
+          }
+        }
+        if (count > 0) {
+          sum.div(count);
+          sum.normalize();
+          sum.mult(this.maxspeed);
+          let steer = p5.Vector.sub(sum, this.velocity);
+          steer.limit(this.maxforce);
+          return steer;
+        } else {
+          return createVector(0, 0);
+        }
+      }
+
+      cohere(boids) {
+        let neighborDistance = 50;
+        let sum = createVector(0, 0);
+        let count = 0;
+        for (let i = 0; i < boids.length; i++) {
+          let d = p5.Vector.dist(this.position, boids[i].position);
+          if (d > 0 && d < neighborDistance) {
+            sum.add(boids[i].position);
+            count++;
+          }
+        }
+        if (count > 0) {
+          sum.div(count);
+          return this.seek(sum);
+        } else {
+          return createVector(0, 0);
+        }
+      }
+    }
+  </script>
+</body>
+</html>
